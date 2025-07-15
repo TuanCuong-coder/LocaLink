@@ -205,3 +205,6 @@ INSERT INTO `notifications` (`user_id`, `type`, `message`, `related_id`) VALUES
 (2, 'comment', 'Minh Anh đã bình luận về bài viết của bạn.', 2),
 (3, 'event_invite', 'Minh Anh đã mời bạn tham gia sự kiện "Đi cà phê sách cuối tuần".', 1),
 (1, 'new_message', 'Bạn có tin nhắn mới từ Ngọc Chi.', 1);
+ALTER TABLE users
+ADD COLUMN verification_token VARCHAR(255) NULL,
+ADD COLUMN is_verified BOOLEAN DEFAULT FALSE;
