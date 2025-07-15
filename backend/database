@@ -1,15 +1,21 @@
 -- =================================================================
 -- PHẦN LÕI: NGƯỜI DÙNG & HỒ SƠ
 -- =================================================================
-create database localink_db
+-- Lệnh này chỉ chạy một lần để tạo database
+-- create database localink_db;
+-- USE localink_db; -- Chọn database vừa tạo để sử dụng
+
+-- Bảng users: Đã thêm verification_token và is_verified
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     avatar VARCHAR(255) DEFAULT 'default_avatar.png',
-    bio TEXT, -- Thêm phần giới thiệu ngắn
-    fake_location VARCHAR(255), -- Vị trí giả lập
+    bio TEXT, -- Thêm phần giới thiệu ngắn (tương ứng với 'interests' trong code backend)
+    fake_location VARCHAR(255), -- Vị trí giả lập (tương ứng với 'region' trong code backend)
+    verification_token VARCHAR(255) NULL, -- Thêm cột để lưu token xác minh email
+    is_verified BOOLEAN DEFAULT FALSE,    -- Thêm cột để kiểm tra trạng thái xác minh email
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -124,7 +130,8 @@ CREATE TABLE notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
--- Mật khẩu cho tất cả user là "password123"
+
+-- Mật khẩu cho tất cả user mẫu là "password123"
 -- Hash: $2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC
 
 -- =================================================================
@@ -132,11 +139,12 @@ CREATE TABLE notifications (
 -- =================================================================
 
 -- >> BẢNG USERS
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `avatar`, `bio`, `fake_location`) VALUES
-(1, 'Minh Anh', 'minhanh@email.com', '$2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC', 'avatar1.png', 'Developer thích du lịch và cà phê.', 'Hà Nội'),
-(2, 'Gia Bảo', 'giabao@email.com', '$2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC', 'avatar2.png', 'Chơi guitar và đá bóng cuối tuần.', 'TP. Hồ Chí Minh'),
-(3, 'Ngọc Chi', 'ngocchi@email.com', '$2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC', 'avatar3.png', 'Thích nấu ăn, đọc sách và chụp ảnh.', 'Đà Nẵng'),
-(4, 'Đức Dũng', 'ducdung@email.com', '$2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC', 'avatar4.png', 'Game thủ và mọt phim chính hiệu.', 'Hà Nội');
+-- Lưu ý: Các giá trị 'region' và 'interests' trong code backend sẽ được lưu vào 'fake_location' và 'bio' tương ứng
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `avatar`, `bio`, `fake_location`, `is_verified`, `verification_token`) VALUES
+(1, 'Minh Anh', 'minhanh@email.com', '$2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC', 'avatar1.png', 'Developer thích du lịch và cà phê.', 'Hà Nội', TRUE, NULL),
+(2, 'Gia Bảo', 'giabao@email.com', '$2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC', 'avatar2.png', 'Chơi guitar và đá bóng cuối tuần.', 'TP. Hồ Chí Minh', TRUE, NULL),
+(3, 'Ngọc Chi', 'ngocchi@email.com', '$2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC', 'avatar3.png', 'Thích nấu ăn, đọc sách và chụp ảnh.', 'Đà Nẵng', TRUE, NULL),
+(4, 'Đức Dũng', 'ducdung@email.com', '$2b$10$E.eL9yI42c7T52rLp4y98uCxp4JTeZGHvTqWMoJ3O9swN2naS4cSC', 'avatar4.png', 'Game thủ và mọt phim chính hiệu.', 'Hà Nội', TRUE, NULL);
 
 -- >> BẢNG INTERESTS (Danh sách sở thích)
 INSERT INTO `interests` (`id`, `name`) VALUES
@@ -205,6 +213,3 @@ INSERT INTO `notifications` (`user_id`, `type`, `message`, `related_id`) VALUES
 (2, 'comment', 'Minh Anh đã bình luận về bài viết của bạn.', 2),
 (3, 'event_invite', 'Minh Anh đã mời bạn tham gia sự kiện "Đi cà phê sách cuối tuần".', 1),
 (1, 'new_message', 'Bạn có tin nhắn mới từ Ngọc Chi.', 1);
-ALTER TABLE users
-ADD COLUMN verification_token VARCHAR(255) NULL,
-ADD COLUMN is_verified BOOLEAN DEFAULT FALSE;

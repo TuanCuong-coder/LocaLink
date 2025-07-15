@@ -1,10 +1,9 @@
 const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto'); 
-const nodemailer = require('nodemailer'); 
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
-// --- Cấu hình Nodemailer ---
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -14,7 +13,7 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.register = async (req, res) => {
-  const { name, email, password, region, interests } = req.body;
+  const { name, email, password, fake_location, bio } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ msg: 'Vui lòng nhập đủ tên, email và mật khẩu.' });
@@ -26,10 +25,10 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-
     const [result] = await pool.query(
-      'INSERT INTO users (name, email, password, region, interests, verification_token) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, email, hashedPassword, region, interests, verificationToken]
+      // Thay đổi tên cột trong truy vấn SQL và thêm verification_token, is_verified
+      'INSERT INTO users (name, email, password, fake_location, bio, verification_token, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, fake_location, bio, verificationToken, false] // is_verified ban đầu là FALSE
     );
     const verificationLink = `http://localhost:3001/api/auth/verify?token=${verificationToken}`;
 
@@ -101,7 +100,7 @@ exports.login = async (req, res) => {
 
     const user = users[0];
 
-    if (!user.is_verified) {
+    if (!user.is_verified) { // Kiểm tra is_verified
         return res.status(401).json({ msg: 'Tài khoản chưa được xác thực. Vui lòng kiểm tra email của bạn.' });
     }
 
